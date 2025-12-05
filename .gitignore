@@ -1,0 +1,16 @@
+/target
+**/target/
+**/*.rs.bk
+
+# Local tooling
+/.cargo/
+
+# Editors/IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS junk
+.DS_Store
+Thumbs.db

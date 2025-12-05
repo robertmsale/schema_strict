@@ -1,0 +1,20 @@
+[workspace]
+members = [
+    "schema_strict",
+    "schema_strict_macros",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2024"
+license = "MIT"
+
+[workspace.dependencies]
+schemars = { version = "1.0.4", features = ["derive", "chrono04", "uuid1"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.145"
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = { version = "2.0", features = ["full"] }
+convert_case = "0.6"
+schema_strict_macros = { path = "schema_strict_macros" }

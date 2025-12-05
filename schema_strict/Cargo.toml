@@ -1,0 +1,10 @@
+[package]
+name = "schema_strict"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+schemars = { workspace = true }
+serde_json = { workspace = true }
+serde = { workspace = true }
+schema_strict_macros = { workspace = true }

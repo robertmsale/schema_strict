@@ -86,6 +86,11 @@ pub fn transform_subschemas(t: &mut StrictStatefulTransform, schema: &mut Schema
                         if let Ok(subschema) = value.try_into() {
                             t.transform(subschema);
                         }
+                        // Rule: every property schema must declare a type (unless it's a $ref).
+                        if value.get("$ref").is_none() && value.get("type").is_none() {
+                            t.unsupported_types_found
+                                .push(format!("property '{key}' missing type"));
+                        }
                         // Rule: every property must have a non-empty string description.
                         // Exception: if the schema is a pure $ref, skip the description requirement
                         // because OpenAI disallows sibling keywords with $ref.
@@ -366,6 +371,21 @@ mod tests {
         pub list: Vec<String>,
     }
 
+    // Custom schema_with to omit a type (should be flagged).
+    fn missing_type_schema(_: &mut SchemaGenerator) -> Schema {
+        serde_json::from_value(json!({
+            "description": "missing type schema"
+        }))
+        .unwrap()
+    }
+
+    #[derive(Deserialize, Serialize, JsonSchema)]
+    #[schemars(description = "Wrapper that injects a property with no type")]
+    struct MissingTypeWrapper {
+        #[schemars(schema_with = "missing_type_schema")]
+        pub value: String,
+    }
+
     // Nested struct fixtures
     #[derive(Deserialize, Serialize, JsonSchema)]
     #[schemars(description = "outer container with child struct")]
@@ -581,6 +601,16 @@ mod tests {
                 .iter()
                 .any(|m| m.contains("$ref must not have sibling keywords")),
             "expected $ref sibling keywords to be flagged"
+        );
+    }
+
+    #[test]
+    fn missing_property_type_is_reported() {
+        let (_schema, report) = strict_schema_for_type::<MissingTypeWrapper>();
+        assert!(
+            report.unsupported_types_found.iter().any(|err| err.contains("missing type")),
+            "expected missing type to be flagged: {:?}",
+            report
         );
     }
 
